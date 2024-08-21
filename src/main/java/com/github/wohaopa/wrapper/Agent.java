@@ -30,6 +30,11 @@ public class Agent {
 
     public static void premain(String agentArgs, Instrumentation inst) {
         inst.addTransformer(new ReplaceClassFileTransformer());
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         loadConfig();
     }
 
@@ -210,9 +215,10 @@ class ReplaceClassFileTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
         ProtectionDomain protectionDomain, byte[] classfileBuffer) {
-        String classToReplace = "cpw/mods/fml/relauncher/CoreModManager";
+        String coreModManagerClass = "cpw/mods/fml/relauncher/CoreModManager";
+        String LoaderClass = "cpw/mods/fml/common/Loader";
 
-        if (className.startsWith(classToReplace)) {
+        if (className.startsWith(coreModManagerClass) || className.startsWith(LoaderClass)) {
             WrapperLog.log.info("Replacing class: " + className);
             return getReplacementClassBytes(className);
         }
