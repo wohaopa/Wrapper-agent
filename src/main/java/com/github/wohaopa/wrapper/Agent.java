@@ -5,8 +5,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -93,40 +96,48 @@ public class Agent {
                 }
 
             } else {
-                modsDirs.deleteOnExit();
-                configDir.deleteOnExit();
-                jsonConfig.deleteOnExit();
+                modsDirs.delete();
+                configDir.delete();
+                jsonConfig.delete();
                 File destDir = configDir.getParentFile();
 
-                String jarFilePath = new File(
-                    Agent.class.getProtectionDomain()
-                        .getCodeSource()
-                        .getLocation()
-                        .getPath()).getAbsolutePath();
+                String jarFilePath = null;
+                try {
+                    jarFilePath = new File(
+                        URLDecoder.decode(
+                            Agent.class.getProtectionDomain()
+                                .getCodeSource()
+                                .getLocation()
+                                .getPath(),
+                            StandardCharsets.UTF_8.toString())).getAbsolutePath();
+                } catch (UnsupportedEncodingException e) {
+                    WrapperLog.log.warning("Path conversion failed: " + jarFilePath);
+                }
+                if (jarFilePath != null) {
+                    try (JarFile jarFile = new JarFile(jarFilePath)) {
+                        Enumeration<JarEntry> entries = jarFile.entries();
 
-                try (JarFile jarFile = new JarFile(jarFilePath)) {
-                    Enumeration<JarEntry> entries = jarFile.entries();
+                        while (entries.hasMoreElements()) {
+                            JarEntry entry = entries.nextElement();
+                            String entryName = entry.getName();
 
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = entries.nextElement();
-                        String entryName = entry.getName();
+                            if (entryName.startsWith("settings") && !entry.isDirectory()) {
+                                File destFile = new File(destDir, entryName.substring("settings".length() + 1));
 
-                        if (entryName.startsWith("settings") && !entry.isDirectory()) {
-                            File destFile = new File(destDir, entryName.substring("settings".length() + 1));
+                                try (InputStream inputStream = jarFile.getInputStream(entry);
+                                    FileOutputStream outputStream = new FileOutputStream(destFile)) {
 
-                            try (InputStream inputStream = jarFile.getInputStream(entry);
-                                FileOutputStream outputStream = new FileOutputStream(destFile)) {
-
-                                byte[] buffer = new byte[1024];
-                                int bytesRead;
-                                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                                    outputStream.write(buffer, 0, bytesRead);
+                                    byte[] buffer = new byte[1024];
+                                    int bytesRead;
+                                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                        outputStream.write(buffer, 0, bytesRead);
+                                    }
                                 }
                             }
                         }
+                    } catch (IOException e) {
+                        WrapperLog.log.warning("Failed to parse jar file " + e);
                     }
-                } catch (IOException ignored) {
-
                 }
             }
         } else {
