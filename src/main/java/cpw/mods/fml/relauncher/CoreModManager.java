@@ -35,6 +35,8 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import org.apache.logging.log4j.Level;
 
+import com.github.wohaopa.wrapper.Config;
+import com.github.wohaopa.wrapper.WrapperLog;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -56,9 +58,11 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
 public class CoreModManager {
 
+    // Wrapper start
     static {
-        System.out.println("HelloWrapper");
+        WrapperLog.log.info("This class: " + CoreModManager.class.getName() + " form wrapper.");
     }
+    // Wrapper end
     private static final Attributes.Name COREMODCONTAINSFMLMOD = new Attributes.Name("FMLCorePluginContainsFMLMod");
     private static final Attributes.Name MODTYPE = new Attributes.Name("ModType");
     private static final Attributes.Name MODSIDE = new Attributes.Name("ModSide");
@@ -220,9 +224,15 @@ public class CoreModManager {
     }
 
     private static void discoverCoreMods(File mcDir, LaunchClassLoader classLoader) {
+        // Wrapper start
+        String modListFile = Config.getModListFile();
+        if (modListFile != null) {
+            ((Map<String, String>) Launch.blackboard.get("launchArgs")).put("--modListFile", modListFile);
+        }
+        // Wrapper end
         ModListHelper.parseModList(mcDir);
         FMLRelaunchLog.fine("Discovering coremods");
-        File coreMods = setupCoreModDir(mcDir);
+        File coreMods = setupCoreModDir(mcDir, Config.getMainModsDir());
         FilenameFilter ff = new FilenameFilter() {
 
             @Override
@@ -304,8 +314,30 @@ public class CoreModManager {
         File versionedModDir = new File(coreMods, FMLInjectionData.mccversion);
         if (versionedModDir.isDirectory()) {
             File[] versionedCoreMods = versionedModDir.listFiles(ff);
-            coreModList = ObjectArrays.concat(coreModList, versionedCoreMods, File.class);
+            if (versionedCoreMods != null)
+                coreModList = ObjectArrays.concat(coreModList, versionedCoreMods, File.class);
+
         }
+        // Wrapper start
+        List<String> modsDirs = Config.getExtraModsDirs();
+        if (modsDirs != null) {
+            for (String modDir : modsDirs) {
+                File dir = new File(modDir);
+                if (dir.isDirectory()) {
+                    File[] dirMods = dir.listFiles(ff);
+                    if (dirMods != null) coreModList = ObjectArrays.concat(coreModList, dirMods, File.class);
+
+                    File dir2 = new File(dir, FMLInjectionData.mccversion);
+                    if (dir2.isDirectory()) {
+                        File[] dir2Mods = dir.listFiles(ff);
+                        if (dir2Mods != null) coreModList = ObjectArrays.concat(coreModList, dir2Mods, File.class);
+
+                    }
+                }
+
+            }
+        }
+        // Wrapper end
 
         coreModList = ObjectArrays.concat(
             coreModList,
@@ -437,8 +469,8 @@ public class CoreModManager {
      *              the minecraft home directory
      * @return the coremod directory
      */
-    private static File setupCoreModDir(File mcDir) {
-        File coreModDir = new File(mcDir, "coremods");
+    private static File setupCoreModDir(File mcDir, String coreModsDir) {
+        File coreModDir = new File(mcDir, coreModsDir);
         try {
             coreModDir = coreModDir.getCanonicalFile();
         } catch (IOException e) {

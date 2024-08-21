@@ -1,0 +1,19 @@
+{
+  "active": "default",
+  "settings": {
+    "default": {
+      "modsDirs": [
+        "mods"
+      ],
+      "configDir": "config"
+    },
+    "example": {
+      "modsDirs": [
+        "mods",
+        "extramods",
+        "coremods"
+      ],
+      "configDir": "example_config"
+    }
+  }
+}

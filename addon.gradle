@@ -9,7 +9,8 @@ jar {
     manifest {
         attributes(
             'Premain-Class': 'com.github.wohaopa.wrapper.Agent',
-            'Agent-Class': 'com.github.wohaopa.wrapper.Agent'
+            'Agent-Class': 'com.github.wohaopa.wrapper.Agent',
+            'Main-Class': 'com.github.wohaopa.wrapper.Agent'
         )
     }
 

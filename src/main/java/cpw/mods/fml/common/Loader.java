@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 
+import com.github.wohaopa.wrapper.Config;
+import com.github.wohaopa.wrapper.WrapperLog;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -76,6 +78,7 @@ import cpw.mods.fml.common.toposort.ModSortingException.SortingExceptionData;
 import cpw.mods.fml.common.toposort.TopologicalSort;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.VersionParser;
+import cpw.mods.fml.relauncher.CoreModManager;
 import cpw.mods.fml.relauncher.ModListHelper;
 import cpw.mods.fml.relauncher.Side;
 
@@ -112,6 +115,9 @@ import cpw.mods.fml.relauncher.Side;
  */
 public class Loader {
 
+    static {
+        WrapperLog.log.info("This class: " + CoreModManager.class.getName() + " form wrapper.");
+    }
     public static final String MC_VERSION = "1.7.10";
     private static final Splitter DEPENDENCYPARTSPLITTER = Splitter.on(":")
         .omitEmptyStrings()
@@ -369,6 +375,27 @@ public class Loader {
             FMLLog.info("Also searching %s for mods", versionSpecificModsDir);
             discoverer.findModDirMods(versionSpecificModsDir);
         }
+        // Wrapper start
+        List<String> modsDirs = Config.getExtraModsDirs();
+        if (modsDirs != null) {
+            for (String modDir : modsDirs) {
+                try {
+                    File dir = new File(modDir).getCanonicalFile();
+                    if (dir.isDirectory()) {
+                        FMLLog.info("Searching the extra mods directory %s for mods", dir);
+                        discoverer.findModDirMods(dir);
+                        File dir2 = new File(dir, mccversion);
+                        if (dir2.isDirectory()) {
+                            FMLLog.info("Also searching %s for mods", dir2);
+                            discoverer.findModDirMods(dir2);
+                        }
+                    } else FMLLog.warning("The extra mods directory %s is not a directory", dir);
+                } catch (IOException e) {
+                    FMLLog.warning("Please check the extra Mods directory %s, Reason for %s", modDir, e.getMessage());
+                }
+            }
+        }
+        // Wrapper end
 
         mods.addAll(discoverer.identifyMods());
         identifyDuplicates(mods);
@@ -415,8 +442,8 @@ public class Loader {
      *
      */
     private void initializeLoader() {
-        File modsDir = new File(minecraftDir, "mods");
-        File configDir = new File(minecraftDir, "config");
+        File modsDir = new File(minecraftDir, Config.getMainModsDir());
+        File configDir = new File(minecraftDir, Config.getConfigDir());
         String canonicalModsPath;
         String canonicalConfigPath;
 
