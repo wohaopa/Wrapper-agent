@@ -30,10 +30,12 @@ public class Agent {
 
     public static void premain(String agentArgs, Instrumentation inst) {
         inst.addTransformer(new ReplaceClassFileTransformer());
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (agentArgs != null && agentArgs.equals("debug")) {
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
         loadConfig();
     }
