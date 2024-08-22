@@ -171,6 +171,7 @@ public class CoreModManager {
     }
 
     public static void handleLaunch(File mcDir, LaunchClassLoader classLoader, FMLTweaker tweaker) {
+        classLoader.addClassLoaderExclusion("com.github.wohaopa.wrapper");
         CoreModManager.mcDir = mcDir;
         CoreModManager.tweaker = tweaker;
         try {
