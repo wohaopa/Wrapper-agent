@@ -1,9 +1,10 @@
-tasks.register('copyCpwToResources', Copy) {
-    from 'build/classes/java/main/cpw' // 源目录
-    into 'build/classes/java/main/resources/cpw' // 目标目录
-}
-compileJava.finalizedBy(copyCpwToResources)
-checkstyleMain.dependsOn(copyCpwToResources)
+//tasks.register('copyCpwToResources', Copy) {
+//    from 'build/classes/java/main/cpw' // 源目录
+//    into 'build/classes/java/main/resources/cpw' // 目标目录
+//}
+//compileJava.finalizedBy(copyCpwToResources)
+//checkstyleMain.dependsOn(copyCpwToResources)
+//jar.dependsOn(copyCpwToResources)
 
 jar {
     manifest {
@@ -14,8 +15,6 @@ jar {
         )
     }
 
-    dependsOn copyCpwToResources
 
     exclude('cpw/**')
 }
-
