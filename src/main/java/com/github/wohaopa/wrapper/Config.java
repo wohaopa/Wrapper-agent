@@ -42,6 +42,10 @@ public class Config {
         return instance.mainModsDir;
     }
 
+    public static String getMainModsDirWithSep() {
+        return instance.mainModsDirWithSeq;
+    }
+
     public static List<String> getExtraModsDirs() {
         return instance.extraModsDirs;
     }

@@ -82,10 +82,16 @@ public class ModsDirFixTransformer implements ClassFileTransformer {
                 needSave.add(className);
                 if (!DEBUG || transformedClasses.contains(className)) {
                     System.out.println("[Wrapper]: transformed " + className + ";" + methodName);
-                    super.visitMethodInsn(
+                    if (((String) value).length() == 4) super.visitMethodInsn(
                         Opcodes.INVOKESTATIC,
                         "com/github/wohaopa/wrapper/Config",
                         "getMainModsDir",
+                        "()Ljava/lang/String;",
+                        false);
+                    else super.visitMethodInsn(
+                        Opcodes.INVOKESTATIC,
+                        "com/github/wohaopa/wrapper/Config",
+                        "getMainModsDirWithSep",
                         "()Ljava/lang/String;",
                         false);
                     return;
