@@ -23,7 +23,7 @@ public class ModsDirFixTransformer implements ClassFileTransformer {
     private static final Set<String> transformedClasses = transformedClassesMap == null ? new HashSet<>()
         : transformedClassesMap.keySet();
 
-    private static final boolean DEBUG = System.getProperty("ZPW_DEBUG", "false")
+    private static final boolean DEBUG = System.getProperty("ZPW_DEBUG_ModsDirFixTransformer", "false")
         .equals("true");
 
     @Override

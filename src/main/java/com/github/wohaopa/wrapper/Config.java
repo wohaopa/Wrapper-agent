@@ -230,15 +230,18 @@ public class Config {
 
     private static String readFile(File file) throws IOException {
         return Files.asCharSource(file, Charsets.UTF_8)
-            .read();
+            .read()
+            .replace("\r\n", "\n");
     }
 
     private static boolean identifyFile(String fileName) {
         try {
-            new File(fileName).getCanonicalFile();
+            new File(fileName).getAbsoluteFile()
+                .getCanonicalFile();
             return true;
         } catch (IOException e) {
             WrapperLog.log.warning("This name does not conform to the folder name rules: " + fileName);
+            e.printStackTrace();
             return false;
         }
     }

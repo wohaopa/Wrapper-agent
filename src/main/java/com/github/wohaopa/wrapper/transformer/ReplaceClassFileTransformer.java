@@ -1,8 +1,5 @@
 package com.github.wohaopa.wrapper.transformer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import java.util.Set;
@@ -31,25 +28,7 @@ public class ReplaceClassFileTransformer implements ClassFileTransformer {
 
         if (replacements.contains(className)) {
             WrapperLog.log.info("Replacing class: " + className);
-            return getReplacementClassBytes(className);
-        }
-        return null;
-    }
-
-    private byte[] getReplacementClassBytes(String className) {
-        try (InputStream is = getClass().getResourceAsStream("/resources/" + className + ".class")) {
-            if (is == null) {
-                throw new IOException("Replacement class not found.");
-            }
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            int nRead;
-            byte[] data = new byte[1024];
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            return buffer.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return Utility.getReplacementClassBytes(className);
         }
         return null;
     }
