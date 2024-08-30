@@ -7,10 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,8 +16,7 @@ import java.util.jar.JarFile;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 public class Config {
 
@@ -31,6 +26,8 @@ public class Config {
     private String mainModsDir = "mods";
     private String mainModsDirWithSeq = "mods/";
     private String configDIr = "config";
+
+    public static _Config config;
 
     private Map<String, Set<String>> needTransform = null;
 
@@ -92,158 +89,54 @@ public class Config {
     }
 
     public static void loadConfig() {
-        File transformConfig = new File("WrapperNeedTransform.txt").getAbsoluteFile();
-        if (!transformConfig.exists()) {
+        File configFile = new File("wrapper_config.json").getAbsoluteFile();
+        if (!configFile.exists()) {
             try {
-                exportFileFromJar(transformConfig, "settings/WrapperNeedTransform.txt");
+                exportFileFromJar(configFile, "settings/wrapper_config.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        if (transformConfig.exists()) readTransformConfigInternal(transformConfig);
-
-        File modsDirs = new File("mods_dirs.txt").getAbsoluteFile();
-        File configDir = new File("config_dir.txt").getAbsoluteFile();
-        File jsonConfig = new File("wrapper.json").getAbsoluteFile();
-
-        if (!modsDirs.exists() && !configDir.exists() && !jsonConfig.exists()) {
-            try {
-                exportFileFromJar(modsDirs, "settings/mods_dirs.txt");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                exportFileFromJar(configDir, "settings/config_dir.txt");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                exportFileFromJar(jsonConfig, "settings/wrapper.txt");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (modsDirs.isFile()) {
-            try {
-                String context = readFile(modsDirs);
-                String[] lines = context.split("\n");
-                String mainMods = null;
-                List<String> extraMods = new ArrayList<>();
-                for (String line : lines) {
-                    if (!line.isEmpty() && identifyFile(line)) {
-                        if (mainMods == null) mainMods = line;
-                        else extraMods.add(line);
-                    }
-                }
-                Config.setMainModsDir(mainMods);
-                Config.setExtraModsDirs(extraMods);
-
-            } catch (IOException e) {
-                WrapperLog.log.warning("Failed to load config file: " + e.getMessage());
-            }
-        }
-
-        if (configDir.isFile()) {
-            try {
-                String context = readFile(configDir);
-                String[] lines = context.split("\n");
-                String config = null;
-                for (String line : lines) {
-                    if (!line.isEmpty() && identifyFile(line)) {
-                        config = line;
-                        break;
-                    }
-                }
-                Config.setConfigDIr(config);
-            } catch (IOException e1) {
-                WrapperLog.log.warning("Failed to load config file: " + e1.getMessage());
-            }
-        }
-
-        if (!modsDirs.exists() && !configDir.exists() && jsonConfig.exists()) {
-            try {
-                String json = readFile(jsonConfig);
-                Gson gsonParser = new Gson();
-                try {
-                    Config.ConfigJson jsonObject = gsonParser.fromJson(json, Config.ConfigJson.class);
-                    if (jsonObject != null && !jsonObject.active.isEmpty()) {
-                        JsonObject setting = jsonObject.settings.getAsJsonObject(jsonObject.active);
-                        if (setting != null) {
-                            Iterator<JsonElement> iterator = setting.getAsJsonArray("modsDirs")
-                                .iterator();
-                            String mainMods = null;
-                            List<String> extraMods = new ArrayList<>();
-                            while (iterator.hasNext()) {
-                                String modsDir = iterator.next()
-                                    .getAsString();
-                                if (identifyFile(modsDir)) {
-                                    if (mainMods == null) mainMods = modsDir;
-                                    else extraMods.add(modsDir);
-                                }
-                            }
-                            Config.setMainModsDir(mainMods);
-                            Config.setExtraModsDirs(extraMods);
-
-                            String configDir1 = setting.get("configDir")
-                                .getAsString();
-                            if (identifyFile(configDir1)) {
-                                Config.setConfigDIr(configDir1);
-                            }
-                        }
-                    }
-                } catch (RuntimeException e) {
-                    WrapperLog.log.warning("Failed to parse modList json file " + jsonConfig);
-                }
-            } catch (IOException e1) {
-                WrapperLog.log.warning("Failed to load config file: " + jsonConfig);
-            }
+        if (configFile.exists()) try {
+            readConfigInternal(configFile);
+            setConfig();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
 
-    private static void readTransformConfigInternal(File transformConfig) {
+    private static void readConfigInternal(File file) throws IOException {
+        String context = readFileInternal(file);
+        Gson gson = new Gson();
+
         try {
-            String context = readFile(transformConfig);
-            String[] lines = context.split("\n");
+            config = gson.fromJson(context, _Config.class);
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
-            Map<String, Set<String>> map = new HashMap<>();
-            for (String line : lines) {
-                if (!line.isEmpty()) {
-                    String[] items = line.split(";", 2);
-                    String[] methods = items[1].split(",");
-                    if (items.length == 2 && !items[0].isEmpty() && !items[1].isEmpty()) {
-                        Set<String> set = new HashSet<>();
-                        for (String method : methods) {
-                            if (!method.isEmpty()) set.add(method);
-                        }
-                        map.put(items[0], set);
-                    }
-                }
-            }
+        setNeedTransform(config.needTransform_mods);
+    }
 
-            Config.setNeedTransform(map);
-        } catch (IOException e1) {
-            WrapperLog.log.warning("Failed to load config file: " + e1.getMessage());
+    public static void setConfig() {
+        if (config.settings.containsKey(config.active)) {
+            _ConfigItem configItem = config.settings.get(config.active);
+            setConfigDIr(configItem.config);
+            setMainModsDir(configItem.main_mods);
+            setExtraModsDirs(configItem.extra_mods);
+        } else {
+            WrapperLog.log.warning("active: " + config.active + " is null!");
+            setConfigDIr(null);
+            setMainModsDir(null);
+            setExtraModsDirs(null);
         }
     }
 
-    private static String readFile(File file) throws IOException {
+    private static String readFileInternal(File file) throws IOException {
         return Files.asCharSource(file, Charsets.UTF_8)
             .read()
             .replace("\r\n", "\n");
-    }
-
-    private static boolean identifyFile(String fileName) {
-        try {
-            new File(fileName).getAbsoluteFile()
-                .getCanonicalFile();
-            return true;
-        } catch (IOException e) {
-            WrapperLog.log.warning("This name does not conform to the folder name rules: " + fileName);
-            e.printStackTrace();
-            return false;
-        }
     }
 
     private static String jarFilePath;
@@ -279,9 +172,30 @@ public class Config {
         jarFile.close();
     }
 
-    public static class ConfigJson {
+    public static class _Config {
 
+        public Map<String, Set<String>> needTransform_mods;
+        public Map<String, Set<String>> needTransform_extraMods;
         public String active;
-        public JsonObject settings;
+        public Map<String, _ConfigItem> settings;
+    }
+
+    public static class _ConfigItem {
+
+        public String config;
+        public String main_mods;
+        public List<String> extra_mods;
+    }
+
+    private static boolean identifyFile(String fileName) {
+        try {
+            new File(fileName).getAbsoluteFile()
+                .getCanonicalFile();
+            return true;
+        } catch (IOException e) {
+            WrapperLog.log.warning("This name does not conform to the folder name rules: " + fileName);
+            e.printStackTrace();
+            return false;
+        }
     }
 }
