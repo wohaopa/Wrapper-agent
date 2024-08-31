@@ -1,12 +1,12 @@
-//tasks.register('copyCpwToResources', Copy) {
-//    from 'build/classes/java/main' // 源目录
-//    into 'build/classes/java/main/resources' // 目标目录
-//    include '**/Loader*', '**/CoreModManager*'
-//    exclude '**/resources/**', '**/com/**'
-//}
-//compileJava.finalizedBy(copyCpwToResources)
-//checkstyleMain.dependsOn(copyCpwToResources)
-//jar.dependsOn(copyCpwToResources)
+tasks.register('copyCpwToResources', Copy) {
+    from 'build/classes/java/main' // 源目录
+    into 'build/classes/java/main/resources' // 目标目录
+    include '**/Loader*', '**/CoreModManager*'
+    exclude '**/resources/**', '**/com/**'
+}
+compileJava.finalizedBy(copyCpwToResources)
+checkstyleMain.dependsOn(copyCpwToResources)
+jar.dependsOn(copyCpwToResources)
 
 jar {
     manifest {

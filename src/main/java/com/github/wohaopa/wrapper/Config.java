@@ -26,13 +26,14 @@ public class Config {
     private String mainModsDir = "mods";
     private String mainModsDirWithSeq = "mods/";
     private String configDIr = "config";
+    private String modsListFile = null;
 
     public static _Config config;
 
     private Map<String, Set<String>> needTransform = null;
 
     public static String getModListFile() {
-        return null;
+        return instance.modsListFile;
     }
 
     public static String getMainModsDir() {
@@ -83,6 +84,11 @@ public class Config {
         else instance.configDIr = configDIr;
     }
 
+    private static void setModsListFile(String modsListFile) {
+        if (modsListFile == null || modsListFile.isEmpty()) instance.modsListFile = null;
+        else instance.modsListFile = modsListFile;
+    }
+
     private static void setNeedTransform(Map<String, Set<String>> map) {
         if (map == null || map.isEmpty()) instance.needTransform = null;
         else instance.needTransform = map;
@@ -125,11 +131,13 @@ public class Config {
             setConfigDIr(configItem.config);
             setMainModsDir(configItem.main_mods);
             setExtraModsDirs(configItem.extra_mods);
+            setModsListFile(configItem.modsListFile);
         } else {
             WrapperLog.log.warning("active: " + config.active + " is null!");
             setConfigDIr(null);
             setMainModsDir(null);
             setExtraModsDirs(null);
+            setModsListFile(null);
         }
     }
 
@@ -185,6 +193,7 @@ public class Config {
         public String config;
         public String main_mods;
         public List<String> extra_mods;
+        public String modsListFile;
     }
 
     private static boolean identifyFile(String fileName) {

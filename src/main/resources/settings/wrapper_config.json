@@ -13,7 +13,8 @@
       "main_mods": "GTNH/2.6.1/mods",
       "extra_mods": [
         "extramods"
-      ]
+      ],
+      "modsListFile": "Forge-2.6.1"
     }
   },
   "needTransform_extraMods": {

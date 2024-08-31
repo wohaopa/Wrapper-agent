@@ -13,6 +13,8 @@ import net.minecraft.launchwrapper.Launch;
 
 import com.google.common.io.Files;
 
+import cpw.mods.fml.relauncher.ModListHelper;
+
 public class Redirector {
 
     public static final Path MOD_DIRECTORY_PATH;
@@ -68,6 +70,15 @@ public class Redirector {
                         .orElse(null);
                     if (jar != null) break;
                 }
+            }
+            if (jar == null) {
+                jar = ModListHelper.additionalMods.values()
+                    .stream()
+                    .map(File::toPath)
+                    .filter(filter)
+                    .map(Path::toFile)
+                    .findFirst()
+                    .orElse(null);
             }
 
             return jar;
