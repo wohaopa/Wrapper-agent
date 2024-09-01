@@ -14,7 +14,7 @@
       "extra_mods": [
         "extramods"
       ],
-      "modsListFile": "Forge-2.6.1"
+      "modsListFile": "Forge-2.6.1.json"
     }
   },
   "needTransform_extraMods": {
