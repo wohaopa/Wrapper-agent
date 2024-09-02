@@ -3,6 +3,8 @@ package com.github.wohaopa.wrapper.window;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -19,6 +21,10 @@ import com.github.wohaopa.wrapper.Config;
 import com.github.wohaopa.wrapper.ModsInfoJson;
 import com.github.wohaopa.wrapper.MultiThreadedDownloader;
 import com.github.wohaopa.wrapper.Tags;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class CheckModsInfoFile extends JDialog {
 
@@ -109,7 +115,7 @@ public class CheckModsInfoFile extends JDialog {
                 migrateButton.setEnabled(false);
                 migrateButton.setText("Migrating");
                 List<ModsInfoJson._ModsInfo> modsInfoList = ModsInfoJson.load(file);
-                File jsonFile = new File(file.getParentFile(), "Forge-" + file.getName());
+                File jsonFile = new File(file.getParentFile(), "Migrate-" + file.getName());
                 ModsInfoJson
                     .migrate(new File(downloadPathField.getText()), new File("ModsRepository"), modsInfoList, jsonFile);
                 Config.setWrapperModsList(jsonFile.getAbsolutePath());
@@ -154,9 +160,28 @@ public class CheckModsInfoFile extends JDialog {
             List<ModsInfoJson._ModsInfo> modsInfoList = ModsInfoJson.load(new File(Config.getWrapperModListFile()));
             List<ModsInfoJson._ModsInfo> failModsInfoList = ModsInfoJson
                 .verifyFiles(new File("ModsRepository"), modsInfoList);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting()
+                .create();;
+            try {
+                Files.asCharSink(new File("FailModsInfoList.json"), Charsets.UTF_8)
+                    .write(gson.toJson(failModsInfoList));
+            } catch (IOException ignored) {}
+
             if (!failModsInfoList.isEmpty()) {
                 CheckModsInfoFile dialog = new CheckModsInfoFile();
                 dialog.setVisible(true);
+            }
+
+            if (Config.getModListFile() == null) {
+                Config.setModsListFile("Forge-" + new File(Config.getWrapperModListFile()).getName());
+            }
+            File file = new File(Config.getModListFile());
+            if (!file.exists()) {
+                List<String> list = new ArrayList<>();
+                for (ModsInfoJson._ModsInfo modsInfo : modsInfoList) list.add(modsInfo.id);
+
+                ModsInfoJson.saveForgeModsListFile(new File("ModsRepository"), list, file);
             }
         }
     }

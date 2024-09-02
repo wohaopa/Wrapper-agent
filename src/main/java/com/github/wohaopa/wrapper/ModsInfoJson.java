@@ -11,6 +11,7 @@ import java.util.Map;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
@@ -21,7 +22,7 @@ public class ModsInfoJson {
     static Map<File, List<_ModsInfo>> cache = new HashMap<>();
 
     public static List<_ModsInfo> load(File file) {
-        if (!file.exists()) return null;
+        if (!file.exists()) return new ArrayList<>();
         if (cache.containsKey(file)) return cache.get(file);
         String context;
         try {
@@ -63,13 +64,18 @@ public class ModsInfoJson {
             file.renameTo(file2);
             modRef.add(modsInfo.id);
         }
+        saveForgeModsListFile(repo, modRef, modsListInfoFile);
 
+    }
+
+    public static void saveForgeModsListFile(File repo, List<String> modRef, File modsListInfoFile) {
         ModListHelper.JsonModList jsonModList = new ModListHelper.JsonModList();
         jsonModList.modRef = modRef;
         jsonModList.parentList = null;
         jsonModList.repositoryRoot = repo.getAbsolutePath();
 
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting()
+            .create();;
         try {
             Files.asCharSink(modsListInfoFile, Charsets.UTF_8)
                 .write(gson.toJson(jsonModList));

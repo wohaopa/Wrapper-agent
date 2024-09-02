@@ -106,7 +106,7 @@ public class Config {
         else instance.configDIr = configDIr;
     }
 
-    private static void setModsListFile(String modsListFile) {
+    public static void setModsListFile(String modsListFile) {
         if (modsListFile == null || modsListFile.isEmpty() || !new File(modsListFile).isFile())
             instance.modsListFile = null;
         else instance.modsListFile = modsListFile;
