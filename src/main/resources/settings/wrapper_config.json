@@ -14,72 +14,64 @@
       "extra_mods": [
         "extramods"
       ],
-      "modsListFile": "Forge-2.6.1.json"
+      "modsListFile": "Forge-2.6.1.json",
+      "wrapperModsList": "2.6.1.json"
     }
   },
-  "needTransform_extraMods": {
-    "com/gtnewhorizon/gtnhmixins/MinecraftURLClassPath": [
-      "getJarInModPath"
+
+  "transform": {
+    "ModsStringReplace" : [
+      "codechicken/core/launch/CodeChickenCorePlugin;scanCodeChickenMods",
+      "cofh/asm/LoadingPlugin$CoFHDummyContainer;scanMods",
+      "com/falsepattern/gasstation/MinecraftURLClassPath;<clinit>",
+      "com/carpentersblocks/CarpentersBlocksCachedResources;<init>",
+      "com/muxiu1997/sharewhereiam/mixinplugin/MixinPlugin;findJourneyMapModJar",
+      "com/mitchej123/hodgepodge/util/VoxelMapCacheMover;changeFileExtensions",
+      "com/gitlab/cdagaming/craftpresence/core/Constants;<clinit>",
+      "ic2/core/init/Libraries;init",
+      "ic2/core/init/Libraries;prepareModExtraction",
+      "pcl/opensecurity/client/sounds/AlarmResource;generateSoundsJSON",
+      "pcl/opensecurity/tileentity/TileEntityAlarm;setAlarm",
+      "pcl/opensecurity/util/SoundUnpack;load",
+      "codechicken/core/launch/DepLoader$DepLoadInst;<init>",
+      "makamys/coretweaks/repackage/makamys/mclib/sloppydeploader/SloppyDepLoader$DepLoadInst;<init>",
+      "thaumcraft/codechicken/core/launch/DepLoader$DepLoadInst;<init>"
     ],
-    "ru/timeconqueror/spongemixins/repackage/com/gtnewhorizon/gtnhmixins/MinecraftURLClassPath": [
-      "getJarInModPath"
+    "DepLoader": [
+      "codechicken/core/launch/DepLoader$DepLoadInst;modFiles",
+      "makamys/coretweaks/repackage/makamys/mclib/sloppydeploader/SloppyDepLoader$DepLoadInst;modFiles",
+      "thaumcraft/codechicken/core/launch/DepLoader$DepLoadInst;modFiles"
     ],
-    "com/gtnewhorizons/modularui/mixinplugin/MixinPlugin": [
-      "findJarOf"
+    "EarlyMixin": [
+      "com/gtnewhorizon/gtnhmixins/MinecraftURLClassPath;getJarInModPath",
+      "ru/timeconqueror/spongemixins/repackage/com/gtnewhorizon/gtnhmixins/MinecraftURLClassPath;getJarInModPath",
+      "com/gtnewhorizons/modularui/mixinplugin/MixinPlugin;findJarOf",
+      "com/kuba6000/mobsinfo/mixin/MixinPlugin;findJarOf",
+      "com/sinthoras/hydroenergy/mixinplugin/MixinPlugin;findJarOf",
+      "kubatech/mixin/MixinPlugin;findJarOf"
     ],
-    "com/kuba6000/mobsinfo/mixin/MixinPlugin": [
-      "findJarOf"
-    ],
-    "com/sinthoras/hydroenergy/mixinplugin/MixinPlugin": [
-      "findJarOf"
-    ],
-    "kubatech/mixin/MixinPlugin": [
-      "findJarOf"
+    "ReplaceClass": [
+      "cpw/mods/fml/common/Loader",
+      "cpw/mods/fml/common/Loader$ModIdComparator",
+      "cpw/mods/fml/common/Loader$1",
+      "cpw/mods/fml/common/Loader$2",
+      "cpw/mods/fml/common/Loader$3",
+      "cpw/mods/fml/relauncher/CoreModManager",
+      "cpw/mods/fml/relauncher/CoreModManager$FMLPluginWrapper",
+      "cpw/mods/fml/relauncher/CoreModManager$1",
+      "cpw/mods/fml/relauncher/CoreModManager$2",
+      "cpw/mods/fml/relauncher/CoreModManager$3",
+      "cpw/mods/fml/relauncher/CoreModManager$4"
     ]
   },
-  "needTransform_mods": {
-    "codechicken/core/launch/CodeChickenCorePlugin": [
-      "scanCodeChickenMods"
-    ],
-    "codechicken/core/launch/DepLoader$DepLoadInst": [
-      "<init>"
-    ],
-    "cofh/asm/LoadingPlugin$CoFHDummyContainer": [
-      "scanMods"
-    ],
-    "com/falsepattern/gasstation/MinecraftURLClassPath": [
-      "<clinit>"
-    ],
-    "com/carpentersblocks/CarpentersBlocksCachedResources": [
-      "<init>"
-    ],
-    "com/muxiu1997/sharewhereiam/mixinplugin/MixinPlugin": [
-      "findJourneyMapModJar"
-    ],
-    "com/mitchej123/hodgepodge/util/VoxelMapCacheMover": [
-      "changeFileExtensions"
-    ],
-    "com/gitlab/cdagaming/craftpresence/core/Constants": [
-      "<clinit>"
-    ],
-    "makamys/coretweaks/repackage/makamys/mclib/sloppydeploader/SloppyDepLoader$DepLoadInst": [
-      "<init>"
-    ],
-    "ic2/core/init/Libraries": [
-      "init",
-      "prepareModExtraction"
-    ],
-    "pcl/opensecurity/client/sounds/AlarmResource": [
-      "generateSoundsJSON"
-    ],
-    "pcl/opensecurity/tileentity/TileEntityAlarm": [
-      "setAlarm"
-    ],
-    "pcl/opensecurity/util/SoundUnpack": [
-      "load"
-    ],
-    "thaumcraft/codechicken/core/launch/DepLoader$DepLoadInst": [
-      "<init>"
-    ]
+  "rename": {
+    "gregtech": "com.github.GTNewHorizons:GT5-Unofficial",
+    "NotEnoughItems": "com.github.GTNewHorizons:NotEnoughItems",
+    "InfernalMobs-": "com.github.GTNewHorizons:Infernal-Mobs",
+    "EnderIO": "com.github.GTNewHorizons:EnderIO",
+    "Draconic-Evolution-": "com.github.GTNewHorizons:Draconic-Evolution",
+    "battlegear2-": "com.github.GTNewHorizons:Battlegear2",
+    "HardcoreEnderExpansion-": "com.github.GTNewHorizons:Hardcore-Ender-Expansion",
+    "Forestry-": "com.github.GTNewHorizons:ForestryMC"
   }
 }

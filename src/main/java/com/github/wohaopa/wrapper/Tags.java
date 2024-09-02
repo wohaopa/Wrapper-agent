@@ -10,4 +10,5 @@ public class Tags {
     public static final String Name = "ZeroPointWrapper";
 
     public static final File saveDir = new File(Name + "/saveClass").getAbsoluteFile();
+    public static final File downloadDir = new File(Name + "/downloads").getAbsoluteFile();
 }

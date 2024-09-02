@@ -26,7 +26,8 @@ public class Utility {
             }
             return buffer.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
+            WrapperLog.log.warning("No replacement class found: " + className);
+            WrapperLog.log.warning(e.getMessage());
         }
         return null;
     }

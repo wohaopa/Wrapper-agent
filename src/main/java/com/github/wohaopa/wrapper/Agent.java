@@ -2,20 +2,19 @@ package com.github.wohaopa.wrapper;
 
 import java.lang.instrument.Instrumentation;
 
-import com.github.wohaopa.wrapper.transformer.MixinFixTransformer;
-import com.github.wohaopa.wrapper.transformer.ModsDirFixTransformer;
-import com.github.wohaopa.wrapper.transformer.ReplaceClassFileTransformer;
-import com.github.wohaopa.wrapper.window.MainGUI;
+import com.github.wohaopa.wrapper.transformer.WrapperTransformer;
+import com.github.wohaopa.wrapper.window.CheckModsInfoFile;
 
 public class Agent {
 
     public static void main(String[] args) {
         Config.loadConfig();
-        MainGUI.main(args);
+        CheckModsInfoFile.main(args);
     }
 
     public static void premain(String agentArgs, Instrumentation inst) {
         if (agentArgs != null && agentArgs.equals("debug")) {
+            Config.DEBUG = true;
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -23,7 +22,7 @@ public class Agent {
             }
         }
         Config.loadConfig();
-        MainGUI.main(null);
+        CheckModsInfoFile.main(null);
         registerTransformer(inst);
     }
 
@@ -33,8 +32,6 @@ public class Agent {
     }
 
     private static void registerTransformer(Instrumentation inst) {
-        inst.addTransformer(new ReplaceClassFileTransformer());
-        if (Config.getNeedTransform() != null) inst.addTransformer(new ModsDirFixTransformer());
-        inst.addTransformer(new MixinFixTransformer());
+        inst.addTransformer(new WrapperTransformer());
     }
 }

@@ -312,6 +312,7 @@ public class CoreModManager {
             throw re;
         }
         File[] coreModList = coreMods.listFiles(ff);
+        if (coreModList == null) coreModList = new File[0];
         File versionedModDir = new File(coreMods, FMLInjectionData.mccversion);
         if (versionedModDir.isDirectory()) {
             File[] versionedCoreMods = versionedModDir.listFiles(ff);
