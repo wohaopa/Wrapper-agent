@@ -174,14 +174,19 @@ public class CheckModsInfoFile extends JDialog {
             }
 
             if (Config.getModListFile() == null) {
-                Config.setModsListFile("Forge-" + new File(Config.getWrapperModListFile()).getName());
+                File file = new File("Forge-" + new File(Config.getWrapperModListFile()).getName());
+                if (!file.exists()) {
+                    List<String> list = new ArrayList<>();
+                    for (ModsInfoJson._ModsInfo modsInfo : modsInfoList) list.add(modsInfo.id);
+                    ModsInfoJson.saveForgeModsListFile(new File("ModsRepository"), list, file);
+                }
+                Config.setModsListFile(file.getAbsolutePath());
             }
-            File file = new File(Config.getModListFile());
-            if (!file.exists()) {
+
+            else if (!failModsInfoList.isEmpty()) {
                 List<String> list = new ArrayList<>();
                 for (ModsInfoJson._ModsInfo modsInfo : modsInfoList) list.add(modsInfo.id);
-
-                ModsInfoJson.saveForgeModsListFile(new File("ModsRepository"), list, file);
+                ModsInfoJson.saveForgeModsListFile(new File("ModsRepository"), list, new File(Config.getModListFile()));
             }
         }
     }
