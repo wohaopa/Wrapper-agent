@@ -1,17 +1,10 @@
 package com.github.wohaopa.wrapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
@@ -19,69 +12,101 @@ import cpw.mods.fml.relauncher.ModListHelper;
 
 public class ModsInfoJson {
 
-    static Map<File, List<_ModsInfo>> cache = new HashMap<>();
+    static final Type type = new TypeToken<List<_ModsInfo>>() {}.getType();
 
-    public static List<_ModsInfo> load(File file) {
-        if (!file.exists()) return new ArrayList<>();
-        if (cache.containsKey(file)) return cache.get(file);
-        String context;
-        try {
-            context = Files.asCharSource(file, Charsets.UTF_8)
-                .read()
-                .replace("\r\n", "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+    private final File jsonFile;
+    private List<_ModsInfo> modsInfoList;
+    private List<_ModsInfo> misModsInfoList;
 
-        Gson gson = new Gson();
-        Type userListType = new TypeToken<List<_ModsInfo>>() {}.getType();
-        List<_ModsInfo> list = gson.fromJson(context, userListType);
-        cache.put(file, list);
-        return list;
+    public ModsInfoJson(File jsonFile) {
+        this.jsonFile = jsonFile;
     }
 
-    public static List<_ModsInfo> verifyFiles(File repo, List<_ModsInfo> modsInfoList) {
-        if (!repo.exists()) return modsInfoList;
-        List<_ModsInfo> failedModsInfoList = new ArrayList<>();
+    public boolean load() {
+        if (!jsonFile.isFile()) return false;
+        modsInfoList = JSONUtility.loadFromFile(jsonFile, type);;
+        return modsInfoList != null;
+    }
+
+    public void saveMisMod() {
+        JSONUtility
+            .saveToFile(misModsInfoList, new File(jsonFile.getParentFile(), "Mis_mods_" + jsonFile.getName()), type);;
+    }
+
+    public void save() {
+        JSONUtility.saveToFile(modsInfoList, jsonFile, type);;
+    }
+
+    public _ModsInfo getModsInfo(String name, String version) {
+        if (modsInfoList == null) return null;
+        version = ":" + version;
+        for (_ModsInfo modsInfo : modsInfoList) {
+            if (modsInfo.uid.equals(name) && modsInfo.id.endsWith(version)) return modsInfo;
+        }
+        return null;
+    }
+
+    public boolean check(File repo) {
+        misModsInfoList = new ArrayList<>();
+        if (!repo.isDirectory() || modsInfoList == null) {
+            misModsInfoList.addAll(modsInfoList);
+            return false;
+        }
         for (_ModsInfo modsInfo : modsInfoList) {
             File file = new File(repo, modsInfo.path);
-            if (!file.exists()) failedModsInfoList.add(modsInfo);
+            if (!file.exists()) misModsInfoList.add(modsInfo);
         }
-        return failedModsInfoList;
+        return misModsInfoList.isEmpty();
     }
 
-    public static void migrate(File dir, File repo, List<_ModsInfo> modsInfoList, File modsListInfoFile) {
-        List<String> modRef = new ArrayList<>();
+    public void migrate(File dir, File repo) {
+        WrapperLog.log.info("Migrating " + dir.getAbsolutePath() + " to " + repo.getAbsolutePath());
         for (_ModsInfo modsInfo : modsInfoList) {
             File file = new File(dir, modsInfo.filename);
-            if (!file.exists()) continue;
+            if (!file.exists()) {
+                WrapperLog.log.info("Skipping " + modsInfo.filename);
+                continue;
+            }
             File file2 = new File(repo, modsInfo.path);
             if (!file2.getParentFile()
                 .exists())
-                file2.getParentFile()
-                    .mkdirs();
+                if (!file2.getParentFile()
+                    .mkdirs()) {
+                        WrapperLog.log.info("Skipping " + modsInfo.filename);
+                        continue;
+                    }
             file.renameTo(file2);
-            modRef.add(modsInfo.id);
+            WrapperLog.log.info("Migrated " + modsInfo.filename + " to " + file2.getAbsolutePath());
         }
-        saveForgeModsListFile(repo, modRef, modsListInfoFile);
-
+        WrapperLog.log.info("Migrating Completed");
     }
 
-    public static void saveForgeModsListFile(File repo, List<String> modRef, File modsListInfoFile) {
+    public void saveForgeModsListFile(File repo, File modsListInfoFile) {
+        List<String> modRef = new ArrayList<>();
+        for (_ModsInfo modsInfo : modsInfoList) {
+            modRef.add(modsInfo.id);
+        }
+
         ModListHelper.JsonModList jsonModList = new ModListHelper.JsonModList();
         jsonModList.modRef = modRef;
         jsonModList.parentList = null;
         jsonModList.repositoryRoot = repo.getAbsolutePath();
 
-        Gson gson = new GsonBuilder().setPrettyPrinting()
-            .create();;
-        try {
-            Files.asCharSink(modsListInfoFile, Charsets.UTF_8)
-                .write(gson.toJson(jsonModList));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        JSONUtility.saveToFile(jsonModList, modsListInfoFile, null);
+    }
+
+    public List<_ModsInfo> getMisModsList() {
+        return misModsInfoList;
+    }
+
+    public void replace(_ModsInfo modsInfo) {
+        for (int i = 0; i < modsInfoList.size(); i++) {
+            if (modsInfoList.get(i).id.equals(modsInfo.id)) {
+                modsInfoList.set(i, modsInfo);
+                return;
+            }
         }
+        modsInfoList.add(modsInfo);
     }
 
     public static class _ModsInfo {

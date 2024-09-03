@@ -4,12 +4,13 @@ import java.lang.instrument.Instrumentation;
 
 import com.github.wohaopa.wrapper.transformer.WrapperTransformer;
 import com.github.wohaopa.wrapper.window.CheckModsInfoFile;
+import com.github.wohaopa.wrapper.window.MainGUI;
 
 public class Agent {
 
     public static void main(String[] args) {
         Config.loadConfig();
-        CheckModsInfoFile.main(args);
+        MainGUI.main(args);
     }
 
     public static void premain(String agentArgs, Instrumentation inst) {

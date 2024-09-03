@@ -2,16 +2,15 @@ package com.github.wohaopa.wrapper.window;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -19,19 +18,16 @@ import javax.swing.JTextField;
 
 import com.github.wohaopa.wrapper.Config;
 import com.github.wohaopa.wrapper.ModsInfoJson;
-import com.github.wohaopa.wrapper.MultiThreadedDownloader;
 import com.github.wohaopa.wrapper.Tags;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.github.wohaopa.wrapper.WrapperLog;
 
-public class CheckModsInfoFile extends JDialog {
+public class CheckModsInfoFile extends JDialog implements ActionListener {
 
-    private JTextField filePathField;
-    private JTextField downloadPathField;
-    private JButton browseButton;
-    private JScrollPane fails;
+    private final JTextField filePathField;
+    private final JTextField downloadPathField;
+    private final JScrollPane fails;
+    private final JButton migrateButton;
+    private final JButton loadButton;
     MultiThreadedDownloader downloader = new MultiThreadedDownloader(4);
 
     public CheckModsInfoFile() {
@@ -43,42 +39,100 @@ public class CheckModsInfoFile extends JDialog {
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-        // 创建文件路径文本框
         filePathField = new JTextField(20);
         downloadPathField = new JTextField(20);
         downloadPathField.setText("mods");
-        filePathField.setEditable(false); // 设置为不可编辑
-        filePathField.setText(Config.getWrapperModListFile() != null ? Config.getWrapperModListFile() : "");
+        filePathField.setEditable(false);
+        filePathField.setText(Config.getWrapperModListFile());
 
         fails = new JScrollPane();
 
-        // 创建浏览按钮
-        browseButton = new JButton("Browse");
-        browseButton.addActionListener(e -> {
-            chooseFile(); // 调用文件选择方法
-        });
+        JButton browseButton = new JButton("Browse");
+        browseButton.addActionListener(e -> chooseFile());
 
-        // 创建浏览按钮
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(e -> {
             dispose();
             downloader.shutdown();
         });
 
-        JButton loadButton = new JButton("Load");
-        loadButton.addActionListener(e -> {
-            if (!filePathField.getText()
-                .isEmpty()) {
-                File file = new File(filePathField.getText());
-                if (file.isFile()) {
-                    loadButton.setEnabled(false);
-                    loadButton.setText("Loading");
-                    List<ModsInfoJson._ModsInfo> modsInfoList = ModsInfoJson.load(file);
-                    List<ModsInfoJson._ModsInfo> failModsInfoList = ModsInfoJson
-                        .verifyFiles(new File("ModsRepository"), modsInfoList);
+        loadButton = new JButton("Load");
+        loadButton.addActionListener(this);
 
+        migrateButton = new JButton("Migrate");
+        migrateButton.addActionListener(e -> {
+            migrateButton.setEnabled(false);
+            migrateButton.setText("Migrating");
+            File file = new File(Config.getWrapperModListFile());
+
+            ModsInfoJson modsInfoJson = new ModsInfoJson(file);
+            modsInfoJson.load();
+            modsInfoJson.migrate(new File(downloadPathField.getText()), new File("ModsRepository"));
+
+            migrateButton.setText("Migrate");
+            migrateButton.setEnabled(true);
+        });
+
+        JPanel panel = new JPanel();
+        panel.add(downloadPathField);
+        panel.add(filePathField);
+        panel.add(browseButton);
+        panel.add(loadButton);
+        panel.add(migrateButton);
+        panel.add(closeButton);
+
+        getContentPane().add(panel, BorderLayout.NORTH);
+        getContentPane().add(downloader.getPane(), BorderLayout.CENTER);
+    }
+
+    private void chooseFile() {
+        JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        int returnValue = fileChooser.showOpenDialog(this);
+
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            Config.setWrapperModsList(selectedFile.getAbsolutePath());
+            filePathField.setText(Config.getWrapperModListFile());
+            WrapperLog.log.info("Selected file: " + selectedFile.getAbsolutePath());
+        }
+    }
+
+    public static void main(String[] args) {
+        if (Config.getWrapperModListFile() != null) {
+            File wrapperFile = new File(Config.getWrapperModListFile());
+            ModsInfoJson modsInfoJson = new ModsInfoJson(wrapperFile);
+            if (modsInfoJson.load()) {
+                if (!modsInfoJson.check(new File("ModsRepository"))) {
+                    modsInfoJson.saveMisMod();
+                    CheckModsInfoFile dialog = new CheckModsInfoFile();
+                    dialog.setVisible(true);
+                }
+            }
+            if (Config.getModListFile() == null) {
+                File file = new File("Forge-" + new File(Config.getWrapperModListFile()).getName());
+                Config.setModsListFile(file.getAbsolutePath());
+            }
+            File forgeModsFile = new File(Config.getModListFile());
+            if (!forgeModsFile.exists() || forgeModsFile.lastModified() < wrapperFile.lastModified()) {
+                modsInfoJson.saveForgeModsListFile(new File("ModsRepository"), forgeModsFile);
+            }
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        loadButton.setEnabled(false);
+        loadButton.setText("Loading");
+        File file = new File(Config.getWrapperModListFile());
+        if (file.isFile()) {
+            ModsInfoJson modsInfoJson = new ModsInfoJson(file);
+            if (modsInfoJson.load()) {
+                // 下载中
+                if (!modsInfoJson.check(new File("ModsRepository"))) {
+                    List<ModsInfoJson._ModsInfo> failModsInfoList = modsInfoJson.getMisModsList();
                     CountDownLatch latch = new CountDownLatch(failModsInfoList.size());
-
                     for (ModsInfoJson._ModsInfo modsInfo : failModsInfoList) {
                         downloader.addDownloadTask(
                             modsInfo.url,
@@ -89,105 +143,26 @@ public class CheckModsInfoFile extends JDialog {
                                 return null;
                             });
                     }
-
                     new Thread(() -> {
                         try {
                             latch.await();
                         } catch (InterruptedException e1) {
-                            System.err.println("Main thread interrupted: " + e1.getMessage());
+                            e1.printStackTrace();
                         }
                         loadButton.setEnabled(true);
                         loadButton.setText("Done");
-                        JFrame jFrame = new JFrame("Fail!");
-                        jFrame.add(fails);
-                        jFrame.setVisible(true);
-
                     }).start();
-
+                } else {
+                    loadButton.setEnabled(true);
+                    loadButton.setText("Load");
                 }
+            } else {
+                loadButton.setEnabled(true);
+                loadButton.setText("Load");
             }
-        });
-
-        JButton migrateButton = new JButton("Migrate");
-        migrateButton.addActionListener(e -> {
-            File file = new File(filePathField.getText());
-            if (file.isFile()) {
-                migrateButton.setEnabled(false);
-                migrateButton.setText("Migrating");
-                List<ModsInfoJson._ModsInfo> modsInfoList = ModsInfoJson.load(file);
-                File jsonFile = new File(file.getParentFile(), "Migrate-" + file.getName());
-                ModsInfoJson
-                    .migrate(new File(downloadPathField.getText()), new File("ModsRepository"), modsInfoList, jsonFile);
-                Config.setWrapperModsList(jsonFile.getAbsolutePath());
-                migrateButton.setText("Migrate");
-                migrateButton.setEnabled(true);
-            }
-        });
-
-        // 创建一个面板来放置文本框和按钮
-        JPanel panel = new JPanel();
-        panel.add(downloadPathField);
-        panel.add(filePathField);
-        panel.add(browseButton);
-        panel.add(loadButton);
-        panel.add(migrateButton);
-        panel.add(closeButton);
-
-        // 将面板添加到框架的内容窗格
-        getContentPane().add(panel, BorderLayout.NORTH);
-        getContentPane().add(downloader.getPane(), BorderLayout.CENTER);
-    }
-
-    // 选择文件的方法
-    private void chooseFile() {
-        // 创建文件选择器
-        JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY); // 只允许选择文件
-
-        // 显示文件选择对话框
-        int returnValue = fileChooser.showOpenDialog(this);
-
-        // 如果用户选择了一个文件
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile(); // 获取选中文件
-            filePathField.setText(selectedFile.getAbsolutePath()); // 设置文本框内容为文件路径
-            System.out.println("Selected file: " + selectedFile.getAbsolutePath()); // 输出文件路径到控制台
-        }
-    }
-
-    public static void main(String[] args) {
-        if (Config.getWrapperModListFile() != null) {
-            List<ModsInfoJson._ModsInfo> modsInfoList = ModsInfoJson.load(new File(Config.getWrapperModListFile()));
-            List<ModsInfoJson._ModsInfo> failModsInfoList = ModsInfoJson
-                .verifyFiles(new File("ModsRepository"), modsInfoList);
-
-            Gson gson = new GsonBuilder().setPrettyPrinting()
-                .create();;
-            try {
-                Files.asCharSink(new File("FailModsInfoList.json"), Charsets.UTF_8)
-                    .write(gson.toJson(failModsInfoList));
-            } catch (IOException ignored) {}
-
-            if (!failModsInfoList.isEmpty()) {
-                CheckModsInfoFile dialog = new CheckModsInfoFile();
-                dialog.setVisible(true);
-            }
-
-            if (Config.getModListFile() == null) {
-                File file = new File("Forge-" + new File(Config.getWrapperModListFile()).getName());
-                if (!file.exists()) {
-                    List<String> list = new ArrayList<>();
-                    for (ModsInfoJson._ModsInfo modsInfo : modsInfoList) list.add(modsInfo.id);
-                    ModsInfoJson.saveForgeModsListFile(new File("ModsRepository"), list, file);
-                }
-                Config.setModsListFile(file.getAbsolutePath());
-            }
-
-            else if (!failModsInfoList.isEmpty()) {
-                List<String> list = new ArrayList<>();
-                for (ModsInfoJson._ModsInfo modsInfo : modsInfoList) list.add(modsInfo.id);
-                ModsInfoJson.saveForgeModsListFile(new File("ModsRepository"), list, new File(Config.getModListFile()));
-            }
+        } else {
+            loadButton.setEnabled(true);
+            loadButton.setText("Load");
         }
     }
 }

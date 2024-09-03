@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper;
+package com.github.wohaopa.wrapper.window;
 
 import java.awt.Color;
 import java.io.BufferedInputStream;
@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -18,7 +20,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -27,6 +28,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 public class MultiThreadedDownloader {
 
+    Proxy proxy = null;
     private final ListeningExecutorService executorService;
 
     private final JPanel panel;
@@ -39,13 +41,19 @@ public class MultiThreadedDownloader {
 
     }
 
-    public ListenableFuture<File> downloadFile(String url, File destinationFile, JProgressBar progressBar) {
+    public void setProxy(String proxyHost, int proxyPort) {
+        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+    }
+
+    private ListenableFuture<File> downloadFile(String url, File destinationFile, JProgressBar progressBar) {
         return executorService.submit(() -> {
             HttpURLConnection connection = null;
             AtomicLong totalBytesRead = new AtomicLong(0);
             try {
                 URL downloadUrl = new URL(url);
-                connection = (HttpURLConnection) downloadUrl.openConnection();
+                if (proxy != null) connection = (HttpURLConnection) downloadUrl.openConnection(proxy);
+                else connection = (HttpURLConnection) downloadUrl.openConnection();
+
                 connection.setRequestMethod("GET");
 
                 int fileSize = connection.getContentLength();
@@ -104,16 +112,17 @@ public class MultiThreadedDownloader {
                     progressBar.setString("Failed");
                     progressBar.setForeground(Color.RED);
                 });
-                callback.apply(url);
+                if (callback != null) callback.apply("Error during download: " + e.getMessage());
                 System.err.println("Error during download: " + e.getMessage());
+                destinationFile.delete();
             } finally {
-                latch.countDown();
+                if (latch != null) latch.countDown();
             }
         }, Executors.newSingleThreadExecutor());
     }
 
     public JComponent getPane() {
-        return new JScrollPane(panel);
+        return panel;
     }
 
     public void shutdown() {
