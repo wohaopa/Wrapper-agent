@@ -3,7 +3,6 @@ package com.github.wohaopa.wrapper;
 import java.lang.instrument.Instrumentation;
 
 import com.github.wohaopa.wrapper.transformer.WrapperTransformer;
-import com.github.wohaopa.wrapper.window.CheckModsInfoFile;
 import com.github.wohaopa.wrapper.window.MainGUI;
 
 public class Agent {
@@ -23,7 +22,7 @@ public class Agent {
             }
         }
         Config.loadConfig();
-        CheckModsInfoFile.main(null);
+        MainGUI.main(null);
         registerTransformer(inst);
     }
 
