@@ -288,7 +288,7 @@ public class MainGUI extends JDialog {
             });
             component5.addActionListener(e -> {
                 if (!modsInfoLoaded) {
-                    logTextArea.append("请加载描述文件！");
+                    logTextArea.append("请加载描述文件！\n");
                     return;
                 }
                 if (modsInfoChecked) {
@@ -303,14 +303,14 @@ public class MainGUI extends JDialog {
                         } catch (InterruptedException ex) {
                             ex.printStackTrace();
                         }
-                        logTextArea.append("下载完成！请检查完成情况");
-                        logTextArea.append("正在迁移下载完成的模组");
+                        logTextArea.append("下载完成！请检查完成情况\n");
+                        logTextArea.append("正在迁移下载完成的模组\n");
                         modsInfoJson.migrate(Tags.downloadDir, Tags.modsRepository);
-                        logTextArea.append("迁移完成！");
+                        logTextArea.append("迁移完成！\n");
                     }).start();
 
                 } else {
-                    logTextArea.append("请先检查模组！");
+                    logTextArea.append("请先检查模组！\n");
                 }
 
             });
@@ -408,18 +408,18 @@ public class MainGUI extends JDialog {
                     addAllToList(strings, modsNameList);
                 } else {
                     logTextArea.append(Tags.modsVersionsPath);
-                    logTextArea.append("下载失败，无法获得模组版本信息");
+                    logTextArea.append("下载失败，无法获得模组版本信息\n");
                 }
 
             });
             component2.addActionListener(e -> {
                 if (!modsInfoLoaded) {
-                    logTextArea.append("请加载描述文件！");
+                    logTextArea.append("请加载描述文件！\n");
                     return;
                 }
                 String version = modsVersionList.getSelectedValue();
                 if (version == null) {
-                    logTextArea.append("请选择模组版本！");
+                    logTextArea.append("请选择模组版本！\n");
                     return;
                 }
 
@@ -453,7 +453,7 @@ public class MainGUI extends JDialog {
             });
             component3.addActionListener(e -> {
                 if (!modsInfoLoaded) {
-                    logTextArea.append("请加载描述文件！");
+                    logTextArea.append("请加载描述文件！\n");
                     return;
                 }
                 modsInfoJson.save();

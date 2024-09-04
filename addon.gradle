@@ -7,6 +7,11 @@ tasks.register('copyCpwToResources', Copy) {
 compileJava.finalizedBy(copyCpwToResources)
 checkstyleMain.dependsOn(copyCpwToResources)
 jar.dependsOn(copyCpwToResources)
+shadowJar.dependsOn(copyCpwToResources)
+
+shadowJar {
+    exclude 'cpw/**', 'ru/**', 'com/gtnewhorizon/**'
+}
 
 jar {
     manifest {
