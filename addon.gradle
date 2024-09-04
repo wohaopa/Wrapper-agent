@@ -10,7 +10,7 @@ jar.dependsOn(copyCpwToResources)
 shadowJar.dependsOn(copyCpwToResources)
 
 shadowJar {
-    exclude 'cpw/**', 'ru/**', 'com/gtnewhorizon/**'
+    exclude 'cpw/**'
 }
 
 jar {

@@ -21,13 +21,12 @@ public class Agent {
                 throw new RuntimeException(e);
             }
         }
-        Config.loadConfig();
-        MainGUI.main(null);
-        registerTransformer(inst);
+        agentmain(agentArgs, inst);
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
         Config.loadConfig();
+        MainGUI.main(null);
         registerTransformer(inst);
     }
 
