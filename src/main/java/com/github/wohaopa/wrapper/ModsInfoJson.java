@@ -101,12 +101,16 @@ public class ModsInfoJson {
 
     public void replace(_ModsInfo modsInfo) {
         for (int i = 0; i < modsInfoList.size(); i++) {
-            if (modsInfoList.get(i).id.equals(modsInfo.id)) {
+            if (modsInfoList.get(i).uid.equals(modsInfo.uid)) {
                 modsInfoList.set(i, modsInfo);
                 return;
             }
         }
-        modsInfoList.add(modsInfo);
+        // modsInfoList.add(modsInfo);
+    }
+
+    public List<_ModsInfo> getAllMods() {
+        return modsInfoList;
     }
 
     public static class _ModsInfo {
