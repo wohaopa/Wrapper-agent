@@ -1,27 +1,23 @@
 package com.github.wohaopa.wrapper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
-import com.github.wohaopa.wrapper.transformer.DepLoader;
-import com.github.wohaopa.wrapper.transformer.EarlyMixin;
-import com.github.wohaopa.wrapper.transformer.IClassAdapter;
-import com.github.wohaopa.wrapper.transformer.IMethodAdapter;
-import com.github.wohaopa.wrapper.transformer.MethodModify;
-import com.github.wohaopa.wrapper.transformer.ModsStringReplace;
-import com.github.wohaopa.wrapper.transformer.ReplaceClass;
+import com.github.wohaopa.wrapper.mc.transformer.DepLoader;
+import com.github.wohaopa.wrapper.mc.transformer.EarlyMixin;
+import com.github.wohaopa.wrapper.mc.transformer.IClassAdapter;
+import com.github.wohaopa.wrapper.mc.transformer.IMethodAdapter;
+import com.github.wohaopa.wrapper.mc.transformer.MethodModify;
+import com.github.wohaopa.wrapper.mc.transformer.ModsStringReplace;
+import com.github.wohaopa.wrapper.mc.transformer.ReplaceClass;
+import com.github.wohaopa.wrapper.utils.JSONUtility;
+import com.github.wohaopa.wrapper.utils.Utility;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 
 public class Config {
 
@@ -120,9 +116,9 @@ public class Config {
         File configFile = new File("wrapper_config.json").getAbsoluteFile();
         if (!configFile.exists()) {
             try {
-                exportFileFromJar(configFile, "settings/wrapper_config.json");
+                Utility.exportFileFromJar(configFile, "settings/wrapper_config.json");
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         if (configFile.exists()) {
@@ -197,39 +193,6 @@ public class Config {
                 default:
             }
         });
-    }
-
-    private static String jarFilePath;
-
-    private static void exportFileFromJar(File destFile, String name) throws IOException {
-        if (jarFilePath == null || jarFilePath.isEmpty()) {
-            jarFilePath = new File(
-                URLDecoder.decode(
-                    Agent.class.getProtectionDomain()
-                        .getCodeSource()
-                        .getLocation()
-                        .getPath(),
-                    StandardCharsets.UTF_8.toString())).getAbsolutePath();
-        }
-
-        JarFile jarFile = new JarFile(jarFilePath);
-        JarEntry jarEntry = jarFile.getJarEntry(name);
-        if (jarEntry == null) throw new FileNotFoundException(name);
-
-        File dir = destFile.getParentFile();
-        if (!dir.exists() && !dir.mkdirs())
-            throw new IOException("Unable to create directory: " + dir.getAbsolutePath());
-
-        InputStream inputStream = jarFile.getInputStream(jarEntry);
-        FileOutputStream outputStream = new FileOutputStream(destFile);
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
-        }
-        inputStream.close();
-        outputStream.close();
-        jarFile.close();
     }
 
     public static String getActiveSetting() {

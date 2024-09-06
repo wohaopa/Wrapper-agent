@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper.window;
+package com.github.wohaopa.wrapper.ui.window;
 
 import java.util.Collection;
 

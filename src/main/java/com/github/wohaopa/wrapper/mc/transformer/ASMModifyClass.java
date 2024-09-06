@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper.transformer;
+package com.github.wohaopa.wrapper.mc.transformer;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;

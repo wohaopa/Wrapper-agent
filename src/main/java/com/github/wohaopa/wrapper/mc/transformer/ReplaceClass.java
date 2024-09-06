@@ -1,7 +1,7 @@
-package com.github.wohaopa.wrapper.transformer;
+package com.github.wohaopa.wrapper.mc.transformer;
 
-import com.github.wohaopa.wrapper.Utility;
-import com.github.wohaopa.wrapper.WrapperLog;
+import com.github.wohaopa.wrapper.utils.Utility;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 
 public class ReplaceClass implements IClassAdapter {
 

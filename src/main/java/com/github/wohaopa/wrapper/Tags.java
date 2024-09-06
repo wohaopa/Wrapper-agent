@@ -12,6 +12,7 @@ public class Tags {
     public static final String wrapperRepo = "https://raw.githubusercontent.com/wohaopa/Wrapper/update/";
     public static final String modsVersionsPath = "mods-versions-wrapper.json";
 
+    public static final File libraries = new File(Name + "/libs").getAbsoluteFile();
     public static final File saveDir = new File(Name + "/saveClass").getAbsoluteFile();
     public static final File downloadDir = new File(Name + "/downloads").getAbsoluteFile();
     public static final File modsRepository = new File("ModsRepository").getAbsoluteFile();

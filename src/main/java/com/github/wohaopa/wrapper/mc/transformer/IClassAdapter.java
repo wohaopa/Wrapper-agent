@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper.transformer;
+package com.github.wohaopa.wrapper.mc.transformer;
 
 public interface IClassAdapter {
 

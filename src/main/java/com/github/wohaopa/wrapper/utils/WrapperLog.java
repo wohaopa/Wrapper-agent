@@ -1,4 +1,6 @@
-package com.github.wohaopa.wrapper;
+package com.github.wohaopa.wrapper.utils;
+
+import com.github.wohaopa.wrapper.Tags;
 
 public class WrapperLog {
 

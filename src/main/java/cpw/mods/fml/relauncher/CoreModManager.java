@@ -36,7 +36,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.logging.log4j.Level;
 
 import com.github.wohaopa.wrapper.Config;
-import com.github.wohaopa.wrapper.WrapperLog;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;

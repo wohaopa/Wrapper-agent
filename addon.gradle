@@ -11,6 +11,14 @@ shadowJar.dependsOn(copyCpwToResources)
 
 shadowJar {
     exclude 'cpw/**'
+    exclude 'META-INF/**'
+    relocate ("com.formdev", "com.formdev"){
+        exclude 'com.formdev'
+    }
+
+    minimize {
+        exclude(dependency('com.formdev:.*:.*'))
+    }
 }
 
 jar {
@@ -18,9 +26,10 @@ jar {
         attributes(
             'Premain-Class': 'com.github.wohaopa.wrapper.Agent',
             'Agent-Class': 'com.github.wohaopa.wrapper.Agent',
-            'Main-Class': 'com.github.wohaopa.wrapper.Agent'
+            'Main-Class': 'com.github.wohaopa.wrapper.ui.window.MainGUI'
+//            'Class-Path': 'libraries/com/google/guava/guava/15.0/guava-15.0.jar libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar'
         )
     }
 
-    exclude 'cpw/**', 'ru/**', 'com/gtnewhorizon/**'
+    exclude 'cpw/**', 'META-INF/**'
 }

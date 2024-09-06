@@ -1,13 +1,13 @@
-package com.github.wohaopa.wrapper.transformer;
+package com.github.wohaopa.wrapper.mc.transformer;
 
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-public class DepLoader implements IMethodAdapter {
+public class EarlyMixin implements IMethodAdapter {
 
-    public static DepLoader instance = new DepLoader();
+    public static EarlyMixin instance = new EarlyMixin();
 
-    private DepLoader() {}
+    private EarlyMixin() {}
 
     @Override
     public MethodVisitor getMethodVisitor(MethodVisitor mv) {
@@ -17,11 +17,12 @@ public class DepLoader implements IMethodAdapter {
             public void visitCode() {
                 super.visitCode();
 
+                mv.visitVarInsn(Opcodes.ALOAD, 0);
                 mv.visitMethodInsn(
                     Opcodes.INVOKESTATIC,
                     "com/github/wohaopa/wrapper/Redirector",
-                    "modFiles",
-                    "()Ljava/util/List;",
+                    "findJarOf",
+                    "(Ljava/lang/Object;)Ljava/io/File;",
                     false);
                 mv.visitInsn(Opcodes.ARETURN);
             }

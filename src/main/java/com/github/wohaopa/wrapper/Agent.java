@@ -2,15 +2,12 @@ package com.github.wohaopa.wrapper;
 
 import java.lang.instrument.Instrumentation;
 
-import com.github.wohaopa.wrapper.transformer.WrapperTransformer;
-import com.github.wohaopa.wrapper.window.MainGUI;
+import com.github.wohaopa.wrapper.mc.transformer.WrapperTransformer;
+import com.github.wohaopa.wrapper.ui.window.MainGUI;
 
 public class Agent {
 
-    public static void main(String[] args) {
-        Config.loadConfig();
-        MainGUI.main(args);
-    }
+    public static Instrumentation inst;
 
     public static void premain(String agentArgs, Instrumentation inst) {
         if (agentArgs != null && agentArgs.equals("debug")) {
@@ -21,12 +18,14 @@ public class Agent {
                 throw new RuntimeException(e);
             }
         }
-        agentmain(agentArgs, inst);
+        Config.loadConfig();
+        MainGUI.display(Config.DEBUG);
+        registerTransformer(inst);
     }
 
     public static void agentmain(String agentArgs, Instrumentation inst) {
         Config.loadConfig();
-        MainGUI.main(null);
+        MainGUI.display(false);
         registerTransformer(inst);
     }
 

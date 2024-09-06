@@ -1,10 +1,12 @@
-package com.github.wohaopa.wrapper;
+package com.github.wohaopa.wrapper.ui;
 
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.wohaopa.wrapper.utils.JSONUtility;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 

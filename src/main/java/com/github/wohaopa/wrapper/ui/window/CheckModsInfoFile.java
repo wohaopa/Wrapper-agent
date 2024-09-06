@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper.window;
+package com.github.wohaopa.wrapper.ui.window;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
@@ -17,9 +17,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import com.github.wohaopa.wrapper.Config;
-import com.github.wohaopa.wrapper.ModsInfoJson;
 import com.github.wohaopa.wrapper.Tags;
-import com.github.wohaopa.wrapper.WrapperLog;
+import com.github.wohaopa.wrapper.ui.ModsInfoJson;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 
 public class CheckModsInfoFile extends JDialog implements ActionListener {
 

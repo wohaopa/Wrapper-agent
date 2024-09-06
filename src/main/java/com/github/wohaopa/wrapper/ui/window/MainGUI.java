@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper.window;
+package com.github.wohaopa.wrapper.ui.window;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -46,9 +46,9 @@ import javax.swing.event.ListDataListener;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.github.wohaopa.wrapper.Config;
-import com.github.wohaopa.wrapper.ModsInfoJson;
-import com.github.wohaopa.wrapper.ModsVersion;
 import com.github.wohaopa.wrapper.Tags;
+import com.github.wohaopa.wrapper.ui.ModsInfoJson;
+import com.github.wohaopa.wrapper.ui.ModsVersion;
 
 public class MainGUI extends JDialog {
 
@@ -813,10 +813,22 @@ public class MainGUI extends JDialog {
     }
 
     public static void main(String[] args) {
-        if (lock.exists() && checkWrapperModsFile()) return;
+
+        Config.loadConfig();
+        display(true);
+    }
+
+    private static void display() {
+
+        // FlatLaf.registerCustomDefaultsSource("com.github.wohaopa.wrapper", MainGUI.class.getClassLoader());
         FlatDarkLaf.setup();
         JDialog dialog = new MainGUI(null);
         dialog.setVisible(true);
+    }
+
+    public static void display(boolean force) {
+        if (!force && lock.exists() && checkWrapperModsFile()) return;
+        display();
     }
 
     class CustomListCellRenderer extends DefaultListCellRenderer {

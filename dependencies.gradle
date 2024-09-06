@@ -35,9 +35,8 @@
  */
 dependencies {
 //    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.5.4-GTNH:dev")
-    shadowImplementation("com.google.guava:guava:17.0")
-    shadowImplementation("com.google.code.gson:gson:2.2.4")
-    shadowImplementation("org.ow2.asm:asm-debug-all:5.0.3")
-    implementation 'com.formdev:flatlaf:3.5.1'
-
+    implementation("com.google.guava:guava:15.0")
+    implementation("com.google.code.gson:gson:2.2.4")
+    implementation("org.ow2.asm:asm-debug-all:5.0.3")
+    shadowImplementation 'com.formdev:flatlaf:2.6'
 }

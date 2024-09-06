@@ -29,7 +29,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Level;
 
 import com.github.wohaopa.wrapper.Config;
-import com.github.wohaopa.wrapper.WrapperLog;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;

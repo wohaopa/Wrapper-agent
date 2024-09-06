@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper;
+package com.github.wohaopa.wrapper.mc.transformer;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import net.minecraft.launchwrapper.Launch;
 
+import com.github.wohaopa.wrapper.Config;
 import com.google.common.io.Files;
 
 import cpw.mods.fml.relauncher.ModListHelper;

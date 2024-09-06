@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper;
+package com.github.wohaopa.wrapper.ui;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.github.wohaopa.wrapper.utils.JSONUtility;
 import com.google.gson.reflect.TypeToken;
 
 public class ModsVersion {

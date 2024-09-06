@@ -1,4 +1,4 @@
-package com.github.wohaopa.wrapper.transformer;
+package com.github.wohaopa.wrapper.mc.transformer;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.wohaopa.wrapper.Config;
-import com.github.wohaopa.wrapper.Utility;
-import com.github.wohaopa.wrapper.WrapperLog;
+import com.github.wohaopa.wrapper.utils.Utility;
+import com.github.wohaopa.wrapper.utils.WrapperLog;
 
 public class WrapperTransformer implements ClassFileTransformer {
 
