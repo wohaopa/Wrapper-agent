@@ -152,6 +152,10 @@ public class ModsInfoJson {
         return modsInfoList;
     }
 
+    public File getFile() {
+        return jsonFile;
+    }
+
     public static class _ModsInfo {
 
         public String id;

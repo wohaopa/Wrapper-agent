@@ -939,6 +939,20 @@ public class MainGUI extends JDialog {
 
         Config.loadConfig();
         display(true);
+
+        if (modsInfoLoaded) {
+            File forgeModsFile = Config.getModListFile() == null ? new File(
+                "Forge-" + modsInfoJson.getFile()
+                    .getName())
+                : new File(Config.getModListFile());
+            if (!forgeModsFile.exists() || forgeModsFile.lastModified() < modsInfoJson.getFile()
+                .lastModified()) {
+                modsInfoJson.saveForgeModsListFile(new File("ModsRepository"), forgeModsFile);
+            }
+            if (Config.getModListFile() == null) {
+                Config.setModsListFile(forgeModsFile.getAbsolutePath());
+            }
+        }
     }
 
     private static void display() {
