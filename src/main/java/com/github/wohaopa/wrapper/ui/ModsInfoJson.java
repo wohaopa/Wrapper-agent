@@ -1,7 +1,9 @@
 package com.github.wohaopa.wrapper.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +83,41 @@ public class ModsInfoJson {
             WrapperLog.log.info("Migrated " + modsInfo.filename + " to " + file2.getAbsolutePath());
         }
         WrapperLog.log.info("Migrating Completed");
+    }
+
+    public void bringTogether(File dir, File repo) {
+        WrapperLog.log.info("Bring together " + repo.getAbsolutePath() + " to " + dir.getAbsolutePath());
+        if (!dir.exists()) dir.mkdirs();
+        for (_ModsInfo modsInfo : modsInfoList) {
+            File file2 = new File(repo, modsInfo.path);
+            if (!file2.exists()) {
+                WrapperLog.log.info("Skipping " + modsInfo.path);
+                continue;
+            }
+            File file = new File(dir, modsInfo.filename);
+            try {
+                Files.copy(file2.toPath(), file.toPath());
+                WrapperLog.log.info("bring Together " + modsInfo.path + " to " + file.getAbsolutePath());
+            } catch (IOException e) {
+                WrapperLog.log.info("Fatal Bring together " + modsInfo.path + " to " + file.getAbsolutePath());
+
+            }
+
+        }
+        WrapperLog.log.info("bringTogether Completed");
+    }
+
+    public boolean checkDir(File dir) {
+        misModsInfoList = new ArrayList<>();
+        if (!dir.isDirectory() || modsInfoList == null) {
+            misModsInfoList.addAll(modsInfoList);
+            return false;
+        }
+        for (_ModsInfo modsInfo : modsInfoList) {
+            File file = new File(dir, modsInfo.filename);
+            if (!file.exists()) misModsInfoList.add(modsInfo);
+        }
+        return misModsInfoList.isEmpty();
     }
 
     public void saveForgeModsListFile(File repo, File modsListInfoFile) {

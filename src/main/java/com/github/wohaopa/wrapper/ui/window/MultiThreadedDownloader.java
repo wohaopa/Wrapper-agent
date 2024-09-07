@@ -126,6 +126,6 @@ public class MultiThreadedDownloader {
     }
 
     public void shutdown() {
-        executorService.shutdown();
+        executorService.shutdownNow();
     }
 }

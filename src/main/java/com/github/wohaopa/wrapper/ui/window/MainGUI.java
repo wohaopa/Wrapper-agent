@@ -10,6 +10,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +67,8 @@ public class MainGUI extends JDialog {
         setLayout(new BorderLayout());
         setSize(560, 480);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        requestFocus();
         setResizable(false);
 
         // 创建一个主面板
@@ -234,7 +237,7 @@ public class MainGUI extends JDialog {
                 Config.removeSetting(setting);
                 settings.setSelectedIndex(0);
             });
-            component5.setEnabled(false);
+            component5.setEnabled(false); // 还没做
 
             component1.setBounds(10, 0, 135, 20);
             component3.setBounds(210 - 20 * 3 - 2, 0, 20, 20);
@@ -283,23 +286,24 @@ public class MainGUI extends JDialog {
         {
             JButton component1 = new JButton("应用");
             component1.setToolTipText("将设置内容保存到内存中");
-            JButton component2 = new JButton("保存");
-            component2.setToolTipText("将配置文件保存到硬盘中");
-            JButton component7 = new JButton("关闭");
-            component7.setToolTipText("关闭并以选中的配置启动游戏");
+            // JButton component2 = new JButton("保存");
+            // component2.setToolTipText("将配置文件保存到硬盘中");
+            JButton component7 = new JButton("保存并关闭");
+            component7.setToolTipText("保存并关闭，以选中的配置启动游戏");
             JCheckBox component8 = new JCheckBox();
             component8.setToolTipText("下次启动不再显示，若要再次显示，请删除与配置文件同级的wrapper.lock文件");
             component8.setSelected(true);
 
             component1.addActionListener(e -> applySettings(settings.getSelectedValue()));
-            component2.addActionListener(e -> {
+            // component2.addActionListener(e -> {
+            // String setting = settings.getSelectedValue();
+            // if (setting != null) Config.setConfig(setting);
+            // Config.saveConfig();
+            // });
+            component7.addActionListener(e -> {
                 String setting = settings.getSelectedValue();
                 if (setting != null) Config.setConfig(setting);
                 Config.saveConfig();
-            });
-            component7.addActionListener(e -> {
-                downloader.shutdown();
-                Config.setConfig(settings.getSelectedValue());
                 if (component8.isSelected()) {
                     try {
                         lock.createNewFile();
@@ -310,12 +314,14 @@ public class MainGUI extends JDialog {
                 dispose();
             });
 
+            component1.setBorder(emptyBorder);
+            component7.setBorder(emptyBorder);
             component1.setBounds(220, 110, 70, 20);
-            component2.setBounds(220 + 70, 110, 70, 20);
-            component7.setBounds(220 + 70 * 2, 110, 70, 20);
+            // component2.setBounds(220 + 70, 110, 70, 20);
+            component7.setBounds(220 + 70, 110, 70 * 2, 20);
             component8.setBounds(220 + 70 * 3, 105, 30, 30);
             panel.add(component1);
-            panel.add(component2);
+            // panel.add(component2);
             panel.add(component7);
             panel.add(component8);
         }
@@ -373,26 +379,30 @@ public class MainGUI extends JDialog {
         {
             JButton component3 = new JButton("加载");
             component3.setToolTipText("加载Wrapper模组清单文件");
-            JButton component4 = new JButton("检查");
-            component4.setToolTipText("根据模组清单文件检查仓库中存在的模组情况");
+            // JButton component4 = new JButton("检查");
+            // component4.setToolTipText("根据模组清单文件检查仓库中存在的模组情况");
             JButton component5 = new JButton("下载");
             component5.setToolTipText("下载缺失的模组");
             JButton component6 = new JButton("迁移");
             component6.setToolTipText("将下载好的模组迁移到仓库");
+            JButton component10 = new JButton("收集");
+            component10.setToolTipText("将清单中的模组从仓库复制到指定文件夹");
+
             JButton component7 = new JButton("刷新");
             component7.setToolTipText("从远程地址获取模组版本（这一步可能比较慢）");
-            JButton component8 = new JButton("选择");
-            component8.setToolTipText("将选中的模组版本保存到内存中的清单中（会从指定仓库下载模组的版本详细信息）");
+            // JButton component8 = new JButton("选择");
+            // component8.setToolTipText("将选中的模组版本保存到内存中的清单中（会从指定仓库下载模组的版本详细信息）");
             JButton component9 = new JButton("保存");
             component9.setToolTipText("保存内存中的清单到文件");
 
             component3.setBorder(emptyBorder);
-            component4.setBorder(emptyBorder);
+            // component4.setBorder(emptyBorder);
             component5.setBorder(emptyBorder);
             component6.setBorder(emptyBorder);
             component7.setBorder(emptyBorder);
-            component8.setBorder(emptyBorder);
+            // component8.setBorder(emptyBorder);
             component9.setBorder(emptyBorder);
+            component10.setBorder(emptyBorder);
 
             component3.addActionListener(e -> {
                 String wrapperFile = textField.getText();
@@ -410,6 +420,15 @@ public class MainGUI extends JDialog {
                             logTextArea.append("Wrapper清单文件：");
                             logTextArea.append(wrapperFile);
                             logTextArea.append("加载成功！\n");
+
+                            if (modsInfoJson.check(Tags.modsRepository)) {
+                                logTextArea.append("Wrapper清单文件检查成功，所有清单中描述的模组全部存在！\n");
+                            } else {
+                                logTextArea.append("Wrapper清单文件检查失败，缺失一个或多个模组！\n详细信息已经保存到了以Mis_mods_为前缀的json文件中\n");
+                                modsInfoJson.saveMisMod();
+                            }
+                            modsInfoChecked = true;
+
                         } else {
                             logTextArea.append("Wrapper清单文件：");
                             logTextArea.append(wrapperFile);
@@ -424,19 +443,19 @@ public class MainGUI extends JDialog {
                     }
                 }
             });
-            component4.addActionListener(e -> {
-                if (modsInfoLoaded) {
-                    if (modsInfoJson.check(Tags.modsRepository)) {
-                        logTextArea.append("Wrapper清单文件检查成功，所有清单中描述的模组全部存在！\n");
-                    } else {
-                        logTextArea.append("Wrapper清单文件检查失败，缺失一个或多个模组！\n详细信息已经保存到了以Mis_mods_为前缀的json文件中\n");
-                        modsInfoJson.saveMisMod();
-                    }
-                    modsInfoChecked = true;
-                } else {
-                    logTextArea.append("Wrapper清单文件未加载，请先加载\n");
-                }
-            });
+            // component4.addActionListener(e -> {
+            // if (modsInfoLoaded) {
+            // if (modsInfoJson.check(Tags.modsRepository)) {
+            // logTextArea.append("Wrapper清单文件检查成功，所有清单中描述的模组全部存在！\n");
+            // } else {
+            // logTextArea.append("Wrapper清单文件检查失败，缺失一个或多个模组！\n详细信息已经保存到了以Mis_mods_为前缀的json文件中\n");
+            // modsInfoJson.saveMisMod();
+            // }
+            // modsInfoChecked = true;
+            // } else {
+            // logTextArea.append("Wrapper清单文件未加载，请先加载\n");
+            // }
+            // });
             component5.addActionListener(e -> {
                 if (!modsInfoLoaded) {
                     logTextArea.append("请加载描述文件！\n");
@@ -491,6 +510,8 @@ public class MainGUI extends JDialog {
                 }
             });
             component7.addActionListener(e -> {
+                int select1 = modsNameList.getSelectedIndex();
+                int select2 = modsVersionList.getSelectedIndex();
                 File versionsJson = new File(Tags.downloadDir, Tags.modsVersionsPath);
                 if (versionsJson.exists()) {
                     long current = System.currentTimeMillis();
@@ -511,6 +532,16 @@ public class MainGUI extends JDialog {
                     logTextArea.append(Tags.modsVersionsPath);
                     logTextArea.append("下载失败，无法获得模组版本信息\n");
                     return;
+                }
+
+                if (modsInfoLoaded) {
+                    if (modsInfoJson.check(Tags.modsRepository)) {
+                        logTextArea.append("Wrapper清单文件检查成功，所有清单中描述的模组全部存在！\n");
+                    } else {
+                        logTextArea.append("Wrapper清单文件检查失败，缺失一个或多个模组！\n详细信息已经保存到了以Mis_mods_为前缀的json文件中\n");
+                        modsInfoJson.saveMisMod();
+                    }
+                    modsInfoChecked = true;
                 }
 
                 if (modsInfoChecked) {
@@ -534,72 +565,108 @@ public class MainGUI extends JDialog {
                     modsVersionListCellRenderer.setGreen(modsVersion);
                 }
 
+                modsNameList.revalidate();
+                modsNameList.repaint();
+                modsNameList.setSelectedIndex(select1);
+                modsVersionList.revalidate();
+                modsVersionList.repaint();
+                modsVersionList.setSelectedIndex(select2);
             });
-            component8.addActionListener(e -> {
-                if (!modsInfoLoaded) {
-                    logTextArea.append("请加载描述文件！\n");
-                    return;
-                }
-                String version = modsVersionList.getSelectedValue();
-                if (version == null) {
-                    logTextArea.append("请选择模组版本！\n");
-                    return;
-                }
-
-                String mod = modsNameList.getSelectedValue();
-                String path = modsVersion.getPath(mod);
-                File file = new File(Tags.downloadDir, path);
-
-                ModsInfoJson._ModsInfo modsInfo = null;
-                ModsInfoJson modversion = new ModsInfoJson(file);
-                int n = 5;
-                while (!modversion.load() && n-- > 0 && modsInfo == null) {
-                    file.delete();
-                    CountDownLatch latch = new CountDownLatch(1);
-                    download(file, Tags.wrapperRepo + path, latch, null);
-                    try {
-                        latch.await();
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                    modsInfo = modversion.getModsInfo(mod, version);
-                }
-                modsInfo = modversion.getModsInfo(mod, version);
-                if (modsInfo == null) {
-                    logTextArea.append("无法下载到指定版本的详细信息！");
-                    logTextArea.append(version);
-                    logTextArea.append("\n");
-                } else {
-                    modsInfoJson.replace(modsInfo);
-                    logTextArea.append("选择成功，已经放入内存。请点击保存！");
-                    logTextArea.append(version);
-                    logTextArea.append("\n");
-                }
-
-            });
+            // component8.addActionListener(e -> {
+            // if (!modsInfoLoaded) {
+            // logTextArea.append("请加载描述文件！\n");
+            // return;
+            // }
+            // String version = modsVersionList.getSelectedValue();
+            // if (version == null) {
+            // logTextArea.append("请选择模组版本！\n");
+            // return;
+            // }
+            //
+            // String mod = modsNameList.getSelectedValue();
+            // String path = modsVersion.getPath(mod);
+            // File file = new File(Tags.downloadDir, path);
+            //
+            // ModsInfoJson._ModsInfo modsInfo = null;
+            // ModsInfoJson modversion = new ModsInfoJson(file);
+            // int n = 5;
+            // while (!modversion.load() && n-- > 0 && modsInfo == null) {
+            // file.delete();
+            // CountDownLatch latch = new CountDownLatch(1);
+            // download(file, Tags.wrapperRepo + path, latch, null);
+            // try {
+            // latch.await();
+            // } catch (InterruptedException ex) {
+            // ex.printStackTrace();
+            // }
+            // modsInfo = modversion.getModsInfo(mod, version);
+            // }
+            // modsInfo = modversion.getModsInfo(mod, version);
+            // if (modsInfo == null) {
+            // logTextArea.append("无法下载到指定版本的详细信息！");
+            // logTextArea.append(version);
+            // logTextArea.append("\n");
+            // } else {
+            // modsInfoJson.replace(modsInfo);
+            // logTextArea.append("选择成功，已经放入内存。请点击保存！");
+            // logTextArea.append(version);
+            // logTextArea.append("\n");
+            // }
+            //
+            // });
             component9.addActionListener(e -> {
                 if (!modsInfoLoaded) {
                     logTextArea.append("请加载描述文件！\n");
                     return;
                 }
                 modsInfoJson.save();
+                logTextArea.append("保存成功！\n");
+            });
+            component10.addActionListener(e -> {
+                if (!modsInfoLoaded) {
+                    logTextArea.append("请加载描述文件！\n");
+                    return;
+                }
+                if (modsInfoChecked) {
+
+                    JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+                    int returnValue = fileChooser.showOpenDialog(null);
+
+                    if (returnValue == JFileChooser.APPROVE_OPTION) {
+                        File selectedFile = fileChooser.getSelectedFile();
+                        logTextArea.append("选择需要收集到的目录：");
+                        logTextArea.append(selectedFile.getAbsolutePath());
+                        logTextArea.append("\n开始收集...");
+
+                        modsInfoJson.bringTogether(selectedFile, Tags.modsRepository);
+                        modsInfoJson.checkDir(selectedFile);
+                        logTextArea.append("迁移完成！缺少的模组可以点击刷新查看\n");
+                    }
+                } else {
+                    logTextArea.append("请先检查模组！\n");
+                }
             });
 
             component3.setBounds(5, 5, 70, 20);
-            component4.setBounds(5 + 72, 5, 70, 20);
-            component5.setBounds(5 + 72 * 2, 5, 70, 20);
-            component6.setBounds(5 + 72 * 3, 5, 70, 20);
-            component7.setBounds(5 + 72 * 4 + 33, 5, 70, 20);
-            component8.setBounds(5 + 72 * 5 + 33, 5, 70, 20);
+            // component4.setBounds(5 + 72, 5, 70, 20);
+            component5.setBounds(5 + 72, 5, 70, 20);
+            component6.setBounds(5 + 72 * 2, 5, 70, 20);
+            component10.setBounds(5 + 72 * 3, 5, 70, 20);
+
+            component7.setBounds(5 + 72 * 5 + 33, 5, 70, 20);
+            // component8.setBounds(5 + 72 * 5 + 33, 5, 70, 20);
             component9.setBounds(5 + 72 * 6 + 33, 5, 70, 20);
 
             panel.add(component3);
-            panel.add(component4);
+            // panel.add(component4);
             panel.add(component5);
             panel.add(component6);
             panel.add(component7);
-            panel.add(component8);
+            // panel.add(component8);
             panel.add(component9);
+            panel.add(component10);
         }
 
         {
@@ -701,6 +768,54 @@ public class MainGUI extends JDialog {
                 }
             });
 
+            modsVersionList.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent evt) {
+                    if (evt.getClickCount() == 2) {
+                        if (!modsInfoLoaded) {
+                            logTextArea.append("请加载描述文件！\n");
+                            return;
+                        }
+                        String version = modsVersionList.getSelectedValue();
+                        if (version == null) {
+                            logTextArea.append("请选择模组版本！\n");
+                            return;
+                        }
+
+                        String mod = modsNameList.getSelectedValue();
+                        String path = modsVersion.getPath(mod);
+                        File file = new File(Tags.downloadDir, path);
+
+                        ModsInfoJson._ModsInfo modsInfo = null;
+                        ModsInfoJson modversion = new ModsInfoJson(file);
+                        int n = 5;
+                        while (!modversion.load() && n-- > 0 && modsInfo == null) {
+                            file.delete();
+                            CountDownLatch latch = new CountDownLatch(1);
+                            download(file, Tags.wrapperRepo + path, latch, null);
+                            try {
+                                latch.await();
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
+                            modsInfo = modversion.getModsInfo(mod, version);
+                        }
+                        modsInfo = modversion.getModsInfo(mod, version);
+                        if (modsInfo == null) {
+                            logTextArea.append("无法下载到指定版本的详细信息！");
+                            logTextArea.append(version);
+                            logTextArea.append("\n");
+                        } else {
+                            modsInfoJson.replace(modsInfo);
+                            logTextArea.append("选择成功，已经放入内存。请点击保存！");
+                            logTextArea.append(version);
+                            logTextArea.append("\n");
+                        }
+                    }
+                }
+            });
+
             Component component1 = new JLabel("模组列表");
             Component component2 = new JScrollPane(modsNameList);
             Component component3 = new JLabel("版本");
@@ -714,6 +829,14 @@ public class MainGUI extends JDialog {
             panel.add(component3);
             panel.add(component4);
         }
+
+        addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                downloader.shutdown();
+            }
+        });
 
         return panel;
     }
